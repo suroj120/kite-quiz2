@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Kite Validator Quiz</title>
   <link rel="stylesheet" href="style.css" />
 </head>
@@ -16,151 +16,155 @@
     </div>
 
     <div id="quiz"></div>
-    <button id="submit">Submit Quiz</button>
-    <div id="results"></div>
+
+    <div class="controls">
+      <button id="submit">Submit Quiz</button>
+      <button id="restart" class="hidden">Restart</button>
+    </div>
+
+    <div id="results" aria-live="polite"></div>
   </div>
 
   <script>
     const quizData = [
-      {
-        question: "What is the core goal of the Kite Validator Program?",
-        a: "To centralize node control",
-        b: "To secure and grow the Kite network",
-        c: "To launch a new AI model",
-        d: "To replace validators with bots",
-        correct: "b",
-      },
-      {
-        question: "Who can apply to become a Kite validator?",
-        a: "Only company employees",
-        b: "Anyone with the right expertise and infrastructure",
-        c: "Only token holders",
-        d: "Only developers from Kite Labs",
-        correct: "b",
-      },
-      {
-        question: "Kite is a Layer-1 blockchain purpose-built for what?",
-        a: "Gaming applications",
-        b: "AI payments and services",
-        c: "Social networking",
-        d: "NFT marketplaces",
-        correct: "b",
-      },
-      {
-        question: "What do validators do to secure the network?",
-        a: "Mint NFTs",
-        b: "Stake tokens and participate in consensus",
-        c: "Run advertisements",
-        d: "Send data manually",
-        correct: "b",
-      },
-      {
-        question: "What happens if a validator acts maliciously?",
-        a: "They receive bonus tokens",
-        b: "They get slashed",
-        c: "Nothing happens",
-        d: "They gain governance power",
-        correct: "b",
-      },
-      {
-        question: "Which of these is part of the evaluation criteria?",
-        a: "Gaming experience",
-        b: "Open-source contributions",
-        c: "Personal social media following",
-        d: "Token trading history",
-        correct: "b",
-      },
-      {
-        question: "How long are validator tokens locked?",
-        a: "1 year",
-        b: "2 years",
-        c: "4 years",
-        d: "Forever",
-        correct: "c",
-      },
-      {
-        question: "Validators must maintain their full stake during which period?",
-        a: "Vesting period",
-        b: "Slashing window",
-        c: "Inflation cycle",
-        d: "Governance round",
-        correct: "a",
-      },
-      {
-        question: "What do validators earn for securing the network?",
-        a: "KITE tokens and rewards",
-        b: "NFTs",
-        c: "Voting badges",
-        d: "Stablecoins only",
-        correct: "a",
-      },
-      {
-        question: "What is one key responsibility of validators?",
-        a: "Maintaining network security and consensus",
-        b: "Issuing marketing ads",
-        c: "Developing new AI models",
-        d: "Minting memes",
-        correct: "a",
-      },
+      { question: "What is the core goal of the Kite Validator Program?", a: "To centralize node control", b: "To secure and grow the Kite network", c: "To launch a new AI model", d: "To replace validators with bots", correct: "b" },
+      { question: "Who can apply to become a Kite validator?", a: "Only company employees", b: "Anyone with the right expertise and infrastructure", c: "Only token holders", d: "Only developers from Kite Labs", correct: "b" },
+      { question: "Kite is a Layer-1 blockchain purpose-built for what?", a: "Gaming applications", b: "AI payments and services", c: "Social networking", d: "NFT marketplaces", correct: "b" },
+      { question: "What do validators do to secure the network?", a: "Mint NFTs", b: "Stake tokens and participate in consensus", c: "Run advertisements", d: "Send data manually", correct: "b" },
+      { question: "What happens if a validator acts maliciously?", a: "They receive bonus tokens", b: "They get slashed", c: "Nothing happens", d: "They gain governance power", correct: "b" },
+      { question: "Which of these is part of the evaluation criteria?", a: "Gaming experience", b: "Open-source contributions", c: "Personal social media following", d: "Token trading history", correct: "b" },
+      { question: "How long are validator tokens locked?", a: "1 year", b: "2 years", c: "4 years", d: "Forever", correct: "c" },
+      { question: "Validators must maintain their full stake during which period?", a: "Vesting period", b: "Slashing window", c: "Inflation cycle", d: "Governance round", correct: "a" },
+      { question: "What do validators earn for securing the network?", a: "KITE tokens and rewards", b: "NFTs", c: "Voting badges", d: "Stablecoins only", correct: "a" },
+      { question: "What is one key responsibility of validators?", a: "Maintaining network security and consensus", b: "Issuing marketing ads", c: "Developing new AI models", d: "Minting memes", correct: "a" }
     ];
 
     const quizContainer = document.getElementById("quiz");
     const resultsContainer = document.getElementById("results");
     const submitButton = document.getElementById("submit");
+    const restartButton = document.getElementById("restart");
     const progressBar = document.getElementById("progress-bar");
     const progressCount = document.getElementById("progress-count");
 
     function buildQuiz() {
-      const output = quizData.map((q, i) => `
-        <div class="fade-in">
-          <div class="question">${i + 1}. ${q.question}</div>
-          <div class="answers">
-            <label><input type="radio" name="question${i}" value="a"> ${q.a}</label><br>
-            <label><input type="radio" name="question${i}" value="b"> ${q.b}</label><br>
-            <label><input type="radio" name="question${i}" value="c"> ${q.c}</label><br>
-            <label><input type="radio" name="question${i}" value="d"> ${q.d}</label><br>
-          </div>
-        </div>
-      `);
-      quizContainer.innerHTML = output.join("");
+      const html = quizData.map((q, i) => {
+        return `
+          <section class="question-card fade-in" data-index="${i}">
+            <div class="question"><span class="qnum">${i+1}.</span> ${escapeHtml(q.question)}</div>
+            <div class="answers" role="radiogroup" aria-labelledby="q${i}">
+              ${["a","b","c","d"].map(opt => {
+                const text = escapeHtml(q[opt]);
+                return `<label class="answer-label" data-value="${opt}">
+                          <input type="radio" name="question${i}" value="${opt}" />
+                          <span class="answer-text">${text}</span>
+                        </label>`;
+              }).join("")}
+            </div>
+          </section>
+        `;
+      }).join("");
+      quizContainer.innerHTML = html;
+
+      // Add listeners for label selection (consistent visual state)
+      document.querySelectorAll(".answers").forEach(group => {
+        group.addEventListener("change", (e) => {
+          const inputs = Array.from(group.querySelectorAll("input[type=radio]"));
+          inputs.forEach(inp => {
+            const label = inp.closest("label");
+            if (!label) return;
+            label.classList.toggle("selected", inp.checked);
+          });
+          updateProgress();
+        });
+      });
+
+      // ensure clicking label focuses input (default) and toggles selected class
+      document.querySelectorAll(".answer-label").forEach(lbl => {
+        lbl.addEventListener("click", () => {
+          const input = lbl.querySelector("input");
+          if (input) input.checked = true;
+          // trigger change event on parent radiogroup
+          const event = new Event('change', { bubbles: true });
+          lbl.closest(".answers").dispatchEvent(event);
+        });
+      });
+
+      updateProgress();
     }
 
     function updateProgress() {
       const total = quizData.length;
       const answered = document.querySelectorAll('input[type="radio"]:checked').length;
-      const percent = (answered / total) * 100;
+      const percent = Math.round((answered / total) * 100);
       progressBar.style.width = percent + "%";
       progressCount.textContent = answered;
     }
 
     function showResults() {
-      const answerContainers = quizContainer.querySelectorAll(".answers");
+      const answerGroups = document.querySelectorAll(".answers");
+      if (!answerGroups.length) return;
+
       let score = 0;
-
-      quizData.forEach((q, i) => {
-        const answerContainer = answerContainers[i];
-        const selector = `input[name=question${i}]:checked`;
-        const userAnswer = (answerContainer.querySelector(selector) || {}).value;
-
-        if (userAnswer === q.correct) {
+      answerGroups.forEach((group, i) => {
+        const checked = group.querySelector('input[type="radio"]:checked');
+        const picked = checked ? checked.value : null;
+        const correct = quizData[i].correct;
+        // color feedback per question
+        group.classList.remove("correct","incorrect");
+        if (picked === null) {
+          group.classList.add("incorrect");
+        } else if (picked === correct) {
+          group.classList.add("correct");
           score++;
-          answerContainers[i].style.color = "limegreen";
         } else {
-          answerContainers[i].style.color = "salmon";
+          group.classList.add("incorrect");
         }
       });
 
-      resultsContainer.innerHTML = `<h2>You scored ${score} out of ${quizData.length}</h2>`;
+      resultsContainer.innerHTML = `
+        <div class="result-card">
+          <h2>You scored ${score} out of ${quizData.length}</h2>
+          <p class="result-msg">${resultMessage(score)}</p>
+        </div>
+      `;
+      submitButton.classList.add("hidden");
+      restartButton.classList.remove("hidden");
+      // jump to results for small screens
+      resultsContainer.scrollIntoView({ behavior: "smooth" });
     }
 
+    function resultMessage(score) {
+      const pct = (score / quizData.length) * 100;
+      if (pct >= 80) return "🏆 Excellent — you're ready to be a validator!";
+      if (pct >= 60) return "👏 Good job — solid understanding!";
+      if (pct >= 40) return "👍 Not bad — a little more reading will help.";
+      return "💪 Keep learning — you’ll get there!";
+    }
+
+    // helper to avoid XSS in inserted text
+    function escapeHtml(str) {
+      return String(str).replace(/[&<>"']/g, (m) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    }
+
+    // restart quiz
+    restartButton.addEventListener("click", () => {
+      document.querySelectorAll('input[type="radio"]').forEach(i => i.checked = false);
+      document.querySelectorAll('.answer-label').forEach(l => l.classList.remove('selected'));
+      resultsContainer.innerHTML = "";
+      submitButton.classList.remove("hidden");
+      restartButton.classList.add("hidden");
+      updateProgress();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    // initial render
     document.addEventListener("DOMContentLoaded", () => {
       buildQuiz();
       submitButton.addEventListener("click", showResults);
-      document.addEventListener("change", updateProgress);
     });
   </script>
 
-  <!-- ✅ Vercel Speed Insights -->
+  <!-- Vercel Speed Insights (static) -->
   <script defer src="https://cdn.vercel-insights.com/v1/script.debug.js"></script>
 </body>
 </html>
